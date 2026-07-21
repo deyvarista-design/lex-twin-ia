@@ -3,286 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LEX TWIN IA — Plataforma Multientidad</title>
+  <title>Plataforma Gemelo Digital - Trámites TUPA</title>
+  
+  <!-- Tailwind CSS CDN para el diseño -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Import map para cargar la SDK oficial de Gemini de Google -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+  </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans p-6">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans p-6">
 
-  <div class="max-w-7xl mx-auto">
+  <div class="max-w-4xl mx-auto space-y-6">
+    
     <!-- Encabezado -->
-    <header class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
-      <div>
-        <h1 class="text-3xl font-extrabold tracking-wider text-blue-400">⚖️ LEX TWIN IA</h1>
-        <p class="text-xs text-slate-400">Predice. Corrige. Presenta. — Plataforma de Análisis Administrativo</p>
-      </div>
-      <button onclick="abrirModalAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-700 transition">
-        🔒 Panel Administrador
-      </button>
+    <header class="border-b border-slate-800 pb-4">
+      <h1 class="text-2xl font-bold text-white">Configura la revisión</h1>
+      <p class="text-slate-400 text-sm">Selecciona una entidad y un trámite del TUPA para analizar la solicitud del ciudadano.</p>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- LADO IZQUIERDO: CONFIGURA LA REVISIÓN -->
-      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-xl font-bold text-white mb-4">Configura la revisión</h2>
-        
-        <!-- Selección de Entidad -->
-        <label class="block text-xs text-slate-400 mb-2">Entidad Pública</label>
-        <div class="grid grid-cols-2 gap-3 mb-6">
-          <button onclick="seleccionarEntidad('moche')" id="btn-moche" class="entidad-btn bg-blue-600 text-white font-medium py-2.5 px-4 rounded-xl border border-blue-500 text-sm">Moche</button>
-          <button onclick="seleccionarEntidad('trujillo')" id="btn-trujillo" class="entidad-btn bg-slate-800 text-slate-300 font-medium py-2.5 px-4 rounded-xl border border-slate-700 text-sm">Trujillo</button>
-          <button onclick="seleccionarEntidad('reniec')" id="btn-reniec" class="entidad-btn bg-slate-800 text-slate-300 font-medium py-2.5 px-4 rounded-xl border border-slate-700 text-sm">RENIEC</button>
-          <button onclick="seleccionarEntidad('sunarp')" id="btn-sunarp" class="entidad-btn bg-slate-800 text-slate-300 font-medium py-2.5 px-4 rounded-xl border border-slate-700 text-sm">SUNARP</button>
-        </div>
-
-        <!-- Trámites segun entidad -->
-        <label class="block text-xs text-slate-400 mb-2">Trámites disponibles en el TUPA</label>
-        <div id="lista-tramites" class="space-y-2 mb-6">
-          <!-- Se cargan dinámicamente desde Firebase o LocalStorage -->
-        </div>
-
-        <!-- Editor de Expediente -->
-        <label class="block text-xs text-slate-400 mb-2">Expediente o Solicitud a Analizar</label>
-        <textarea id="texto-expediente" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 mb-4" placeholder="Ingresa el borrador de la solicitud o redacta los detalles del trámite..."></textarea>
-
-        <button onclick="analizarExpediente()" id="btn-analizar" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/20">
-          🔍 Analizar con Gemelo Digital
-        </button>
-      </section>
-
-      <!-- LADO DERECHO: DIAGNÓSTICO DE IA -->
-      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-        <div>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white">Diagnóstico de IA</h2>
-            <span class="text-xs bg-slate-800 text-emerald-400 border border-slate-700 px-2.5 py-1 rounded-full">Gemelo Digital Activo</span>
-          </div>
-
-          <!-- Score / Probabilidad -->
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 mb-6 flex justify-between items-center">
-            <span class="text-slate-300 text-sm font-medium">Probabilidad de Éxito</span>
-            <span id="score-exito" class="text-4xl font-extrabold text-emerald-400">0%</span>
-          </div>
-
-          <!-- Alertas TUPA -->
-          <div class="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 mb-4">
-            <h3 id="alertas-titulo" class="text-amber-400 text-sm font-bold mb-1">⚠️ Observaciones del TUPA</h3>
-            <p id="alertas-texto" class="text-xs text-amber-200/80 leading-relaxed">Selecciona un trámite e ingresa el texto para generar el análisis automático.</p>
-          </div>
-
-          <!-- Recomendaciones -->
-          <div class="bg-blue-950/30 border border-blue-800/50 rounded-xl p-4">
-            <h3 class="text-blue-400 text-sm font-bold mb-1">💡 Recomendaciones de Corrección</h3>
-            <div id="recomendaciones-texto" class="text-xs text-blue-200/80 leading-relaxed">Las sugerencias legales y administrativas aparecerán aquí.</div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-  </div>
-
-  <!-- MODAL PANEL ADMINISTRADOR -->
-  <div id="modal-admin" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full">
-      <h3 class="text-lg font-bold text-white mb-4">Gestor del TUPA (Administrador)</h3>
-      
-      <label class="block text-xs text-slate-400 mb-1">Entidad</label>
-      <select id="admin-entidad" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white mb-3">
-        <option value="moche">Municipalidad Distrital de Moche</option>
-        <option value="trujillo">Municipalidad Provincial de Trujillo</option>
-        <option value="reniec">RENIEC</option>
-        <option value="sunarp">SUNARP</option>
-      </select>
-
-      <label class="block text-xs text-slate-400 mb-1">Nombre del Trámit e</label>
-      <input type="text" id="admin-nombre" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white mb-3" placeholder="Ej. Licencia de Funcionamiento">
-
-      <label class="block text-xs text-slate-400 mb-1">Requisitos y Costos (TUPA)</label>
-      <textarea id="admin-requisitos" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white mb-4" placeholder="Lista de requisitos, código de tasa, monto, plazo..."></textarea>
-
-      <div class="flex gap-3">
-        <button onclick="guardarTramiteTUPA()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-sm">Guardar Trámite</button>
-        <button onclick="cerrarModalAdmin()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm">Cancelar</button>
+    <!-- Selección de Entidad -->
+    <section>
+      <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3">Entidad Pública</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button onclick="seleccionarEntidad('Moche', this)" class="btn-entidad bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-lg">Moche</button>
+        <button onclick="seleccionarEntidad('Trujillo', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">Trujillo</button>
+        <button onclick="seleccionarEntidad('RENIEC', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">RENIEC</button>
+        <button onclick="seleccionarEntidad('SUNARP', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">SUNARP</button>
       </div>
-    </div>
+    </section>
+
+    <!-- Trámites disponibles -->
+    <section>
+      <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3">Trámites disponibles en el TUPA</h2>
+      <div id="lista-tramites" class="space-y-2">
+        <!-- Se generan o cargan de forma dinámica -->
+        <button onclick="seleccionarTramite('Constancia de No Adeudo Tributario', 'Presentar FUT, pago de tasa correspondiente en caja municipal y comprobante de pago en original.', this)" 
+                class="btn-tramite w-full flex items-center justify-between p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg text-left transition-all">
+          <span class="font-medium text-slate-200">Constancia de No Adeudo Tributario</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Formulario de Entrada del Expediente -->
+    <section class="space-y-3">
+      <label for="texto-expediente" class="block text-xs uppercase font-semibold text-slate-400 tracking-wider">
+        Expediente o Solicitud a Analizar
+      </label>
+      <textarea id="texto-expediente" rows="5" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-sm leading-relaxed" placeholder="Ingresa aquí el texto de la solicitud enviada por el ciudadano...">El comprobante de pago original por la tasa correspondiente de S/ 25.00 fue realizado en la caja municipal (Recibo N° 0049281).
+
+Sin otro particular, solicito dar trámite a la presente.
+
+Atentamente,
+Juan Carlos Pérez Gómez</textarea>
+      
+      <button onclick="analizarExpediente()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
+        <span>🔍</span> Analizar con Gemelo Digital
+      </button>
+    </section>
+
+    <!-- Diagnóstico de IA -->
+    <section class="bg-slate-950/90 border border-slate-800 rounded-xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-semibold text-white">Diagnóstico de IA</h3>
+        <span class="text-xs bg-slate-800 text-emerald-400 border border-slate-700 px-2.5 py-1 rounded-full font-medium">Gemelo Digital Activo</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <div class="text-center p-4 bg-slate-900 rounded-lg border border-slate-800/80">
+          <p class="text-xs text-slate-400 font-medium mb-1">Probabilidad de Éxito</p>
+          <span id="score-exito" class="text-3xl font-bold text-emerald-400">--%</span>
+        </div>
+
+        <div class="md:col-span-2 space-y-2">
+          <div>
+            <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Alertas y Observaciones</h4>
+            <p id="alertas-texto" class="text-sm text-slate-300 mt-1 leading-relaxed">Selecciona un trámite e ingresa una solicitud para comenzar el análisis.</p>
+          </div>
+          <div class="pt-2 border-t border-slate-800/60">
+            <h4 class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Recomendaciones</h4>
+            <p id="recomendaciones-texto" class="text-sm text-slate-300 mt-1 leading-relaxed">El Gemelo Digital evaluará si faltan documentos o datos de acuerdo al TUPA.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <script>
-    // 1. Configuración de Firebase (Sustituye con tus claves)
-    const firebaseConfig = {
-     apiKey: "AIzaSyBzo3VKtk8DoRKSLoacui0hdEzdnJc2MZY",
-  authDomain: "lex-twin-ia.firebaseapp.com",
-  projectId: "lex-twin-ia",
-  storageBucket: "lex-twin-ia.firebasestorage.app",
-  messagingSenderId: "54672678855",
-  appId: "1:54672678855:web:1f865453ad7bd28ec3c3e2"
-    };
-    
-    // Inicializar Firebase
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  <!-- Lógica principal de JavaScript (Módulo ESM con SDK de Gemini) -->
+  <script type="module">
+    import { GoogleGenAI } from "@google/genai";
 
-    let entidadActual = 'moche';
-    let tramiteSeleccionado = null;
+    // ⚠️ REEMPLAZA ESTA VARIABLE CON TU API KEY REAL DE GOOGLE AI STUDIO
+    const GEMINI_API_KEY = "AQ.Ab8RN6Ld0pNzpkB8Nl_04RBFKmXL4-zQcfX-_iX2eXk_ucjcbQ";
 
-    // Base de datos local por defecto (Fallback si no hay conexión a Firebase)
-    const baseDatosLocal = {
-      moche: [
-        { id: 1, nombre: "Constancia de No Adeudo Tributario", requisitos: "FUT con firma, Copia de DNI, Pago de tasa S/ 25.50 en caja municipal." },
-        { id: 2, nombre: "Inscripción / Registro Predial (HR/PU)", requisitos: "Título de propiedad o escritura pública, DNI del titular, Autoavaluo cancelado." }
-      ],
-      trujillo: [
-        { id: 3, nombre: "Licencia de Funcionamiento", requisitos: "Declaración jurada, ITSE aprobación de seguridad, RUC activo y habido." }
-      ]
+    // Inicializar cliente SDK de Gemini
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+    // Variables de estado globales
+    window.entidadActual = "Moche";
+    window.tramiteSeleccionado = {
+      nombre: "Constancia de No Adeudo Tributario",
+      requisitos: "Presentar FUT, pago de tasa correspondiente en caja municipal y comprobante de pago en original."
     };
 
-    function seleccionarEntidad(entidad) {
-      entidadActual = entidad;
-      document.querySelectorAll('.entidad-btn').forEach(btn => {
-        btn.classList.replace('bg-blue-600', 'bg-slate-800');
+    // Selección de Entidad Pública
+    window.seleccionarEntidad = function(nombre, boton) {
+      window.entidadActual = nombre;
+      document.querySelectorAll('.btn-entidad').forEach(btn => {
+        btn.className = "btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700";
       });
-      document.getElementById(`btn-${entidad}`).classList.replace('bg-slate-800', 'bg-blue-600');
-      cargarTramites();
-    }
+      boton.className = "btn-entidad bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-lg";
+    };
 
-    function cargarTramites() {
-      const contenedor = document.getElementById('lista-tramites');
-      contenedor.innerHTML = '';
-      
-      // Cargar desde Firebase
-      db.collection("tupas").where("entidad", "==", entidadActual).get()
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            querySnapshot.forEach((doc) => {
-              renderizarBotonTramite(doc.data());
-            });
-          } else {
-            // Cargar de LocalStorage o Base Local
-            const lista = baseDatosLocal[entidadActual] || [];
-            lista.forEach(t => renderizarBotonTramite(t));
-          }
-        });
-    }
+    // Selección de Trámite del TUPA
+    window.seleccionarTramite = function(nombre, requisitos, boton) {
+      window.tramiteSeleccionado = { nombre, requisitos };
+      document.querySelectorAll('.btn-tramite').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'bg-slate-700/80');
+        btn.classList.add('border-slate-700');
+      });
+      boton.classList.remove('border-slate-700');
+      boton.classList.add('border-blue-500', 'bg-slate-700/80');
+    };
 
-    function renderizarBotonTramite(t) {
-      const contenedor = document.getElementById('lista-tramites');
-      const btn = document.createElement('button');
-      btn.className = 'w-full text-left bg-slate-950 border border-slate-800 hover:border-blue-500/50 p-3 rounded-xl text-xs text-slate-300 flex justify-between items-center transition';
-      btn.innerHTML = `<span>${t.nombre}</span> <span class="w-2 h-2 rounded-full bg-blue-500"></span>`;
-      btn.onclick = () => { tramiteSeleccionado = t; alert(`Trámite seleccionado: ${t.nombre}`); };
-      contenedor.appendChild(btn);
-    }
+    // Análisis de expediente con Gemelo Digital
+    window.analizarExpediente = async function() {
+      const textoExpediente = document.getElementById('texto-expediente').value.trim();
+      const scoreElemento = document.getElementById('score-exito');
+      const alertasTexto = document.getElementById('alertas-texto');
+      const recomendacionesTexto = document.getElementById('recomendaciones-texto');
 
-    // Modal Admin
-    function abrirModalAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
-    function cerrarModalAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
+      if (!window.tramiteSeleccionado) {
+        alert("Por favor, selecciona primero un trámite de la lista.");
+        return;
+      }
 
-    function guardarTramiteTUPA() {
-      const entidad = document.getElementById('admin-entidad').value;
-      const nombre = document.getElementById('admin-nombre').value;
-      const requisitos = document.getElementById('admin-requisitos').value;
+      if (!textoExpediente) {
+        alert("Por favor, ingresa el texto del expediente a analizar.");
+        return;
+      }
 
-      db.collection("tupas").add({ entidad, nombre, requisitos, fecha: new Date() })
-        .then(() => {
-          alert("¡Trámite guardado en el TUPA exitosamente!");
-          cerrarModalAdmin();
-          cargarTramites();
-        });
-    }
-// Reemplaza esto con tu API Key obtenida de Google AI Studio
-const GEMINI_API_KEY = "AQ.Ab8RN6Ld0pNzpkB8Nl_04RBFKmXL4-zQcfX-_iX2eXk_ucjcbQ"; 
+      // Indicadores visuales de carga
+      scoreElemento.innerText = "⏳...";
+      alertasTexto.innerText = "Analizando solicitud con el Gemelo Digital...";
+      recomendacionesTexto.innerText = "Procesando observaciones de acuerdo al TUPA...";
 
-async function analizarExpediente() {
-  const textoExpediente = document.getElementById('texto-expediente').value.trim();
-  const scoreElemento = document.getElementById('score-exito');
-  const alertasTexto = document.getElementById('alertas-texto');
-  const recomendacionesTexto = document.getElementById('recomendaciones-texto');
-
-  if (!tramiteSeleccionado) {
-    alert("Por favor, selecciona primero un trámite de la lista.");
-    return;
-  }
-
-  if (!textoExpediente) {
-    alert("Por favor, ingresa el texto del expediente o solicitud a analizar.");
-    return;
-  }
-
-  // Estado visual de carga
-  scoreElemento.innerText = "⏳...";
-  alertasTexto.innerText = "Analizando requisitos con Gemelo Digital...";
-  recomendacionesTexto.innerText = "Procesando observaciones...";
-
-  // Sanitización de textos para evitar romper la estructura del payload JSON
-  const nombreEntidad = String(entidadActual || "Entidad Pública").trim();
-  const nombreTramite = String(tramiteSeleccionado.nombre || "Trámite General").trim();
-  const requisitosTramite = String(tramiteSeleccionado.requisitos || "Requisitos TUPA").trim();
-
-  // Prompt simplificado y limpio
-  const promptText = `Actúa como Gemelo Digital y Asesor Legal Administrativo de "${nombreEntidad}".
-Trámite a evaluar: "${nombreTramite}".
-Requisitos oficiales según TUPA: "${requisitosTramite}".
+      const promptText = `Actúa como Gemelo Digital y Asesor Legal Administrativo de la entidad "${window.entidadActual}".
+Trámite a evaluar: "${window.tramiteSeleccionado.nombre}".
+Requisitos oficiales del TUPA: "${window.tramiteSeleccionado.requisitos}".
 
 Solicitud/Expediente del ciudadano:
+"""
 ${textoExpediente}
+"""
 
 INSTRUCCIONES:
-Analiza si la solicitud cumple con los requisitos del TUPA.
-Responde ÚNICAMENTE con un objeto JSON sin bloques de código markdown:
-{"probabilidad": 85, "observaciones": "Texto de las observaciones", "recomendaciones": "Pasos para subsanar"}`;
+Analiza críticamente la solicitud frente a los requisitos del TUPA.
+Responde ÚNICAMENTE con un objeto JSON válido sin bloques markdown ni texto adicional:
+{"probabilidad": 85, "observaciones": "Resumen claro de lo que falta o está mal presentado.", "recomendaciones": "Pasos precisos para subsanar los requisitos faltantes."}`;
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: promptText,
+        });
 
-const respuesta = await fetch(url, {
-  method: "POST",
-  headers: { 
-    "Content-Type": "application/json",
-    "x-goog-api-key":"AQ.Ab8RN6Ld0pNzpkB8Nl_04RBFKmXL4-zQcfX-_iX2eXk_ucjcbQ" // 👈 Añadir esta línea clave
-  },
-  body: JSON.stringify({
-    contents: [
-      {
-        parts: [
-          { text: promptText }
-        ]
+        let rawText = response.text;
+        
+        // Sanitizar y limpiar envoltorios de Markdown ```json ... ```
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const resultado = JSON.parse(rawText);
+
+        // Renderizar resultados en pantalla
+        scoreElemento.innerText = `${resultado.probabilidad}%`;
+        alertasTexto.innerText = resultado.observaciones;
+        recomendacionesTexto.innerText = resultado.recomendaciones;
+
+      } catch (error) {
+        console.error("Error en la llamada con la SDK de Gemini:", error);
+        scoreElemento.innerText = "Error";
+        alertasTexto.innerText = "Ocurrió un error al procesar la solicitud. Revisa la consola (F12).";
+        recomendacionesTexto.innerText = "Asegúrate de haber ingresado una API Key activa de Google AI Studio.";
       }
-    ]
-  })
-});
-
-    if (!respuesta.ok) {
-      const errorJson = await respuesta.json();
-      console.error("Detalle de respuesta de la API:", errorJson);
-      throw new Error(`Error HTTP ${respuesta.status}`);
-    }
-
-    const data = await respuesta.json();
-    let rawText = data.candidates[0].content.parts[0].text;
-    
-    // Limpiar posibles etiquetas de markdown
-    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const resultado = JSON.parse(rawText);
-
-    // Desplegar resultados
-    scoreElemento.innerText = `${resultado.probabilidad}%`;
-    alertasTexto.innerText = resultado.observaciones;
-    recomendacionesTexto.innerText = resultado.recomendaciones;
-
-  } catch (error) {
-    console.error("Error al procesar con Gemelo Digital:", error);
-    scoreElemento.innerText = "Error";
-    alertasTexto.innerText = "No se pudo realizar el análisis. Revisa la consola (F12) para más detalles.";
-    recomendacionesTexto.innerText = "Asegúrate de que la API Key esté activa y el trámite seleccionado correctamente.";
-  }
-}
-
-    // Inicializar
-    cargarTramites();
+    };
   </script>
+
 </body>
 </html>
