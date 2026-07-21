@@ -194,7 +194,7 @@
         });
     }
 // Reemplaza esto con tu API Key obtenida de Google AI Studio
-const GEMINI_API_KEY = " "; 
+const GEMINI_API_KEY = "AQ.Ab8RN6Ld0pNzpkB8Nl_04RBFKmXL4-zQcfX-_iX2eXk_ucjcbQ"; 
 
 async function analizarExpediente() {
   const textoExpediente = document.getElementById('texto-expediente').value.trim();
@@ -237,22 +237,23 @@ Responde ÚNICAMENTE con un objeto JSON sin bloques de código markdown:
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-    
-    const respuesta = await fetch(url, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json" 
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: promptText }
-            ]
-          }
+
+const respuesta = await fetch(url, {
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "x-goog-api-key":"AQ.Ab8RN6Ld0pNzpkB8Nl_04RBFKmXL4-zQcfX-_iX2eXk_ucjcbQ" // 👈 Añadir esta línea clave
+  },
+  body: JSON.stringify({
+    contents: [
+      {
+        parts: [
+          { text: promptText }
         ]
-      })
-    });
+      }
+    ]
+  })
+});
 
     if (!respuesta.ok) {
       const errorJson = await respuesta.json();
