@@ -1,199 +1,333 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma Gemelo Digital - Trámites TUPA</title>
-  
-  <!-- Tailwind CSS CDN para el diseño -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEX TWIN IA - Plataforma</title>
+    <style>
+        /* Estilos generales del fondo oscuro */
+        body {
+            background-color: #060B13;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            margin: 0;
+        }
 
-  <!-- Import map para cargar la SDK oficial de Gemini de Google -->
-  <script type="importmap">
-    {
-      "imports": {
-        "@google/genai": "https://esm.run/@google/genai"
-      }
-    }
-  </script>
+        .contenedor-principal {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* Estilo de las tarjetas (Columnas) */
+        .tarjeta {
+            background-color: #0A1324;
+            border: 1px solid #1C2A43;
+            border-radius: 16px;
+            padding: 25px;
+            width: 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Columna Izquierda: Botones y Selectores */
+        .etiqueta {
+            font-size: 0.75rem;
+            color: #8A9BB3;
+            margin-bottom: 8px;
+            display: block;
+            margin-top: 15px;
+        }
+
+        .selector {
+            background-color: #121E36;
+            border: 1px solid #233554;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 0.9rem;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .grilla-botones {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-inactivo {
+            background-color: #121E36;
+            border: 1px solid #233554;
+            color: #8A9BB3;
+            padding: 10px;
+            border-radius: 8px;
+            flex: 1;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-activo {
+            background-color: #112847;
+            border: 1px solid #1D4576;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            flex: 1;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .punto-verde {
+            color: #00FFAA;
+            font-weight: bold;
+        }
+
+        /* Botón de Subir Archivo */
+        .btn-subir {
+            background-color: #2563EB;
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-subir:hover {
+            background-color: #1D4ED8;
+        }
+
+        /* Columna Derecha: Diagnóstico */
+        .cabecera-diagnostico {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .etiqueta-simulado {
+            background-color: #072B2B;
+            color: #00FFAA;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .seccion-porcentaje {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            border-bottom: 1px solid #1C2A43;
+            padding-bottom: 20px;
+        }
+
+        .porcentaje {
+            color: #00FFAA;
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin: 0;
+            transition: color 0.3s;
+        }
+
+        /* Contenedor de resultados oculto al inicio */
+        #caja-resultados {
+            display: none;
+        }
+
+        .caja-alerta {
+            background-color: #1A1713;
+            border: 1px solid #362914;
+            border-left: 4px solid #F59E0B;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .titulo-alerta {
+            color: #FBBF24;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .caja-recomendacion {
+            background-color: #072B2B;
+            border: 1px solid #114242;
+            border-left: 4px solid #10B981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .titulo-recomendacion {
+            color: #34D399;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .texto-descripcion {
+            font-size: 0.8rem;
+            color: #A0ABC0;
+            margin: 0;
+            line-height: 1.5;
+        }
+		/* --- Adaptación para celulares (Responsive) --- */
+        @media (max-width: 768px) {
+            .contenedor-principal {
+                flex-direction: column; /* Coloca una tarjeta debajo de la otra */
+                padding: 10px;
+            }
+            
+            .tarjeta {
+                width: 100%; /* Hace que las tarjetas ocupen todo el ancho del celular */
+                box-sizing: border-box;
+            }
+            
+            body {
+                padding: 15px; /* Reduce los bordes en celulares */
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans p-6">
+<body>
 
-  <div class="max-w-4xl mx-auto space-y-6">
-    
-    <!-- Encabezado -->
-    <header class="border-b border-slate-800 pb-4">
-      <h1 class="text-2xl font-bold text-white">Configura la revisión</h1>
-      <p class="text-slate-400 text-sm">Selecciona una entidad y un trámite del TUPA para analizar la solicitud del ciudadano.</p>
-    </header>
+    <div class="contenedor-principal">
+        
+        <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN -->
+        <div class="tarjeta">
+            <h2>Configura la revisión</h2>
+            
+            <span class="etiqueta">Entidad</span>
+            <select class="selector">
+                <option>Municipalidad Distrital de Moche</option>
+            </select>
 
-    <!-- Selección de Entidad -->
-    <section>
-      <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3">Entidad Pública</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <button onclick="seleccionarEntidad('Moche', this)" class="btn-entidad bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-lg">Moche</button>
-        <button onclick="seleccionarEntidad('Trujillo', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">Trujillo</button>
-        <button onclick="seleccionarEntidad('RENIEC', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">RENIEC</button>
-        <button onclick="seleccionarEntidad('SUNARP', this)" class="btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700">SUNARP</button>
-      </div>
-    </section>
+            <div class="grilla-botones">
+                <button class="btn-activo"><span class="punto-verde">•</span> Moche</button>
+                <button class="btn-inactivo">Trujillo</button>
+            </div>
+            <div class="grilla-botones">
+                <button class="btn-inactivo">RENIEC</button>
+                <button class="btn-inactivo">SUNARP</button>
+            </div>
 
-    <!-- Trámites disponibles -->
-    <section>
-      <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3">Trámites disponibles en el TUPA</h2>
-      <div id="lista-tramites" class="space-y-2">
-        <!-- Se generan o cargan de forma dinámica -->
-        <button onclick="seleccionarTramite('Constancia de No Adeudo Tributario', 'Presentar FUT, pago de tasa correspondiente en caja municipal y comprobante de pago en original.', this)" 
-                class="btn-tramite w-full flex items-center justify-between p-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg text-left transition-all">
-          <span class="font-medium text-slate-200">Constancia de No Adeudo Tributario</span>
-          <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-        </button>
-      </div>
-    </section>
+            <span class="etiqueta" style="color: #00FFAA; font-weight: bold;">MOCHE</span>
+            <button class="btn-activo" style="width: 100%; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                Constancia de No Adeudo Tributario <span class="punto-verde">•</span>
+            </button>
+            <button class="btn-inactivo" style="width: 100%;">
+                Inscripción / Registro Predial (HR/PU)
+            </button>
 
-    <!-- Formulario de Entrada del Expediente -->
-    <section class="space-y-3">
-      <label for="texto-expediente" class="block text-xs uppercase font-semibold text-slate-400 tracking-wider">
-        Expediente o Solicitud a Analizar
-      </label>
-      <textarea id="texto-expediente" rows="5" class="w-full bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-sm leading-relaxed" placeholder="Ingresa aquí el texto de la solicitud enviada por el ciudadano...">El comprobante de pago original por la tasa correspondiente de S/ 25.00 fue realizado en la caja municipal (Recibo N° 0049281).
+            <!-- Input oculto para cargar archivo y Botón visible -->
+            <input type="file" id="archivo-pdf" accept=".pdf" style="display: none;">
+            <button id="btn-subir" class="btn-subir">Subir Expediente (PDF) y Analizar</button>
 
-Sin otro particular, solicito dar trámite a la presente.
-
-Atentamente,
-Juan Carlos Pérez Gómez</textarea>
-      
-      <button onclick="analizarExpediente()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
-        <span>🔍</span> Analizar con Gemelo Digital
-      </button>
-    </section>
-
-    <!-- Diagnóstico de IA -->
-    <section class="bg-slate-950/90 border border-slate-800 rounded-xl p-5 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-lg font-semibold text-white">Diagnóstico de IA</h3>
-        <span class="text-xs bg-slate-800 text-emerald-400 border border-slate-700 px-2.5 py-1 rounded-full font-medium">Gemelo Digital Activo</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-        <div class="text-center p-4 bg-slate-900 rounded-lg border border-slate-800/80">
-          <p class="text-xs text-slate-400 font-medium mb-1">Probabilidad de Éxito</p>
-          <span id="score-exito" class="text-3xl font-bold text-emerald-400">--%</span>
         </div>
 
-        <div class="md:col-span-2 space-y-2">
-          <div>
-            <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Alertas y Observaciones</h4>
-            <p id="alertas-texto" class="text-sm text-slate-300 mt-1 leading-relaxed">Selecciona un trámite e ingresa una solicitud para comenzar el análisis.</p>
-          </div>
-          <div class="pt-2 border-t border-slate-800/60">
-            <h4 class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Recomendaciones</h4>
-            <p id="recomendaciones-texto" class="text-sm text-slate-300 mt-1 leading-relaxed">El Gemelo Digital evaluará si faltan documentos o datos de acuerdo al TUPA.</p>
-          </div>
+        <!-- COLUMNA DERECHA: DIAGNÓSTICO IA -->
+        <div class="tarjeta">
+            <div class="cabecera-diagnostico">
+                <h2>Diagnóstico de IA</h2>
+                <span class="etiqueta-simulado" id="estado-etiqueta">Esperando Documento</span>
+            </div>
+
+            <div class="seccion-porcentaje">
+                <span id="texto-estado" style="color: #8A9BB3; font-size: 0.9rem;">Probabilidad de éxito</span>
+                <span class="porcentaje" id="numero-porcentaje">--%</span>
+            </div>
+
+            <!-- Estas cajas aparecerán después del análisis -->
+            <div id="caja-resultados">
+                <div class="caja-alerta">
+                    <div class="titulo-alerta">3 Alertas TUPA detectadas</div>
+                    <p class="texto-descripcion">Falta copia de DNI, FUT sin firma y comprobante con código de tasa incorrecto.</p>
+                </div>
+
+                <div class="caja-recomendacion">
+                    <div class="titulo-recomendacion">Recomendaciones de corrección</div>
+                    <p class="texto-descripcion">Corrige la copia de DNI, firma el FUT, verifica el código de tasa y vuelve a analizar el expediente antes de presentarlo ante la entidad pública.</p>
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
 
-  </div>
+    </div>
 
-  <!-- Lógica principal de JavaScript (Módulo ESM con SDK de Gemini) -->
-  <script type="module">
-    import { GoogleGenAI } from "@google/genai";
+    <!-- SCRIPT DE ANIMACIÓN (JAVASCRIPT) -->
+    <script>
+        const btnSubir = document.getElementById('btn-subir');
+        const inputPdf = document.getElementById('archivo-pdf');
+        const numeroPorcentaje = document.getElementById('numero-porcentaje');
+        const textoEstado = document.getElementById('texto-estado');
+        const estadoEtiqueta = document.getElementById('estado-etiqueta');
+        const cajaResultados = document.getElementById('caja-resultados');
 
-    // ⚠️ REEMPLAZA ESTA VARIABLE CON TU API KEY REAL DE GOOGLE AI STUDIO
-    const GEMINI_API_KEY = "AQ.Ab8RN6KzuaGBrD1kSPvTGOO7ASQhBpm6Ol2fTc7u85bPx8HPhw";
-
-    // Inicializar cliente SDK de Gemini
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-    // Variables de estado globales
-    window.entidadActual = "Moche";
-    window.tramiteSeleccionado = {
-      nombre: "Constancia de No Adeudo Tributario",
-      requisitos: "Presentar FUT, pago de tasa correspondiente en caja municipal y comprobante de pago en original."
-    };
-
-    // Selección de Entidad Pública
-    window.seleccionarEntidad = function(nombre, boton) {
-      window.entidadActual = nombre;
-      document.querySelectorAll('.btn-entidad').forEach(btn => {
-        btn.className = "btn-entidad bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors border border-slate-700";
-      });
-      boton.className = "btn-entidad bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-lg";
-    };
-
-    // Selección de Trámite del TUPA
-    window.seleccionarTramite = function(nombre, requisitos, boton) {
-      window.tramiteSeleccionado = { nombre, requisitos };
-      document.querySelectorAll('.btn-tramite').forEach(btn => {
-        btn.classList.remove('border-blue-500', 'bg-slate-700/80');
-        btn.classList.add('border-slate-700');
-      });
-      boton.classList.remove('border-slate-700');
-      boton.classList.add('border-blue-500', 'bg-slate-700/80');
-    };
-
-    // Análisis de expediente con Gemelo Digital
-    window.analizarExpediente = async function() {
-      const textoExpediente = document.getElementById('texto-expediente').value.trim();
-      const scoreElemento = document.getElementById('score-exito');
-      const alertasTexto = document.getElementById('alertas-texto');
-      const recomendacionesTexto = document.getElementById('recomendaciones-texto');
-
-      if (!window.tramiteSeleccionado) {
-        alert("Por favor, selecciona primero un trámite de la lista.");
-        return;
-      }
-
-      if (!textoExpediente) {
-        alert("Por favor, ingresa el texto del expediente a analizar.");
-        return;
-      }
-
-      // Indicadores visuales de carga
-      scoreElemento.innerText = "⏳...";
-      alertasTexto.innerText = "Analizando solicitud con el Gemelo Digital...";
-      recomendacionesTexto.innerText = "Procesando observaciones de acuerdo al TUPA...";
-
-      const promptText = `Actúa como Gemelo Digital y Asesor Legal Administrativo de la entidad "${window.entidadActual}".
-Trámite a evaluar: "${window.tramiteSeleccionado.nombre}".
-Requisitos oficiales del TUPA: "${window.tramiteSeleccionado.requisitos}".
-
-Solicitud/Expediente del ciudadano:
-"""
-${textoExpediente}
-"""
-
-INSTRUCCIONES:
-Analiza críticamente la solicitud frente a los requisitos del TUPA.
-Responde ÚNICAMENTE con un objeto JSON válido sin bloques markdown ni texto adicional:
-{"probabilidad": 85, "observaciones": "Resumen claro de lo que falta o está mal presentado.", "recomendaciones": "Pasos precisos para subsanar los requisitos faltantes."}`;
-
-      try {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: promptText,
+        // Al hacer clic en el botón azul, se abre la ventana para elegir el PDF
+        btnSubir.addEventListener('click', () => {
+            inputPdf.click();
         });
 
-        let rawText = response.text;
-        
-        // Sanitizar y limpiar envoltorios de Markdown ```json ... ```
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const resultado = JSON.parse(rawText);
+        // Cuando el usuario elige el archivo, empieza la magia
+        inputPdf.addEventListener('change', () => {
+            if(inputPdf.files.length > 0) {
+                iniciarAnalisis();
+            }
+        });
 
-        // Renderizar resultados en pantalla
-        scoreElemento.innerText = `${resultado.probabilidad}%`;
-        alertasTexto.innerText = resultado.observaciones;
-        recomendacionesTexto.innerText = resultado.recomendaciones;
+        function iniciarAnalisis() {
+            btnSubir.disabled = true;
+            btnSubir.innerText = "Analizando con LEX TWIN IA...";
+            btnSubir.style.backgroundColor = "#475569";
+            
+            estadoEtiqueta.innerText = "Procesando";
+            estadoEtiqueta.style.color = "#FBBF24";
+            textoEstado.innerText = "Leyendo documento...";
+            numeroPorcentaje.style.color = "#FBBF24";
+            cajaResultados.style.display = 'none';
+            
+            // Simulación de los porcentajes de tu guion
+            let pasos = [20, 45, 80, 100];
+            let tiempo = 0;
 
-      } catch (error) {
-        console.error("Error en la llamada con la SDK de Gemini:", error);
-        scoreElemento.innerText = "Error";
-        alertasTexto.innerText = "Ocurrió un error al procesar la solicitud. Revisa la consola (F12).";
-        recomendacionesTexto.innerText = "Asegúrate de haber ingresado una API Key activa de Google AI Studio.";
-      }
-    };
-  </script>
-
+            pasos.forEach((paso) => {
+                setTimeout(() => {
+                    numeroPorcentaje.innerText = paso + '%';
+                    
+                    if (paso === 100) {
+                        setTimeout(() => {
+                            // Resultado final
+                            btnSubir.innerText = "Análisis Completado";
+                            estadoEtiqueta.innerText = "Simulado";
+                            estadoEtiqueta.style.color = "#00FFAA";
+                            textoEstado.innerText = "Probabilidad de éxito";
+                            numeroPorcentaje.innerText = "45%"; // Vuelve a tu diseño original
+                            numeroPorcentaje.style.color = "#00FFAA";
+                            cajaResultados.style.display = 'block'; // Muestra las alertas
+                        }, 1000);
+                    }
+                }, tiempo += 1200); // Avanza cada 1.2 segundos
+            });
+        }
+    </script>
 </body>
 </html>
