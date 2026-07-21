@@ -194,7 +194,7 @@
         });
     }
 // Reemplaza esto con tu API Key obtenida de Google AI Studio
-const GEMINI_API_KEY = "AQ.Ab8RN6L1HKiWeLLhkynOpwOrf4YudUz90Mtrcm1Hgtf8GKgWnw"; 
+const GEMINI_API_KEY = "AQ.Ab8RN6JM0P66S3pLFkRCqXmxN7qHeG9xTbw-OH41pGDVHV6DZA"; 
 
 async function analizarExpediente() {
   const textoExpediente = document.getElementById('texto-expediente').value.trim();
@@ -217,32 +217,32 @@ async function analizarExpediente() {
   alertasTexto.innerText = "Analizando requisitos con Gemelo Digital...";
   recomendacionesTexto.innerText = "Procesando observaciones...";
 
-  // Construcción limpia del prompt evitando conflictos de formato
-  const nombreEntidad = String(entidadActual || "Entidad Pública").toUpperCase();
-  const nombreTramite = String(tramiteSeleccionado.nombre || "Trámite General");
-  const requisitosTramite = String(tramiteSeleccionado.requisitos || "Requisitos estándar del TUPA");
+  // Sanitización de textos para evitar romper la estructura del payload JSON
+  const nombreEntidad = String(entidadActual || "Entidad Pública").trim();
+  const nombreTramite = String(tramiteSeleccionado.nombre || "Trámite General").trim();
+  const requisitosTramite = String(tramiteSeleccionado.requisitos || "Requisitos TUPA").trim();
 
-  const promptText = `
-Actúa como Gemelo Digital y Asesor Legal Administrativo de la entidad pública "${nombreEntidad}".
-Trámite: "${nombreTramite}"
-Requisitos TUPA: "${requisitosTramite}"
+  // Prompt simplificado y limpio
+  const promptText = `Actúa como Gemelo Digital y Asesor Legal Administrativo de "${nombreEntidad}".
+Trámite a evaluar: "${nombreTramite}".
+Requisitos oficiales según TUPA: "${requisitosTramite}".
 
-Expediente presentado:
-"""
+Solicitud/Expediente del ciudadano:
 ${textoExpediente}
-"""
 
-Instrucciones:
-Analiza el expediente frente a los requisitos del TUPA. Responde ÚNICAMENTE en este formato JSON estricto:
-{"probabilidad": 85, "observaciones": "Resumen claro de lo que falta o está mal.", "recomendaciones": "Pasos exactos para corregirlo."}
-`.trim();
+INSTRUCCIONES:
+Analiza si la solicitud cumple con los requisitos del TUPA.
+Responde ÚNICAMENTE con un objeto JSON sin bloques de código markdown:
+{"probabilidad": 85, "observaciones": "Texto de las observaciones", "recomendaciones": "Pasos para subsanar"}`;
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
     
     const respuesta = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json" 
+      },
       body: JSON.stringify({
         contents: [
           {
@@ -255,28 +255,28 @@ Analiza el expediente frente a los requisitos del TUPA. Responde ÚNICAMENTE en 
     });
 
     if (!respuesta.ok) {
-      const errorDetail = await respuesta.json();
-      console.error("Detalle del error de la API:", errorDetail);
-      throw new Error(`Error HTTP: ${respuesta.status}`);
+      const errorJson = await respuesta.json();
+      console.error("Detalle de respuesta de la API:", errorJson);
+      throw new Error(`Error HTTP ${respuesta.status}`);
     }
 
     const data = await respuesta.json();
-    let textoRespuesta = data.candidates[0].content.parts[0].text;
+    let rawText = data.candidates[0].content.parts[0].text;
     
-    // Limpieza de bloques markdown ```json ... ```
-    textoRespuesta = textoRespuesta.replace(/```json|```/g, '').trim();
-    const resultado = JSON.parse(textoRespuesta);
+    // Limpiar posibles etiquetas de markdown
+    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const resultado = JSON.parse(rawText);
 
-    // Actualización de UI
+    // Desplegar resultados
     scoreElemento.innerText = `${resultado.probabilidad}%`;
     alertasTexto.innerText = resultado.observaciones;
     recomendacionesTexto.innerText = resultado.recomendaciones;
 
   } catch (error) {
-    console.error("Error en el Gemelo Digital:", error);
+    console.error("Error al procesar con Gemelo Digital:", error);
     scoreElemento.innerText = "Error";
-    alertasTexto.innerText = "Ocurrió un error al procesar el expediente. Revisa la consola para más detalles.";
-    recomendacionesTexto.innerText = "Verifica que seleccionaste un trámite válido de la lista.";
+    alertasTexto.innerText = "No se pudo realizar el análisis. Revisa la consola (F12) para más detalles.";
+    recomendacionesTexto.innerText = "Asegúrate de que la API Key esté activa y el trámite seleccionado correctamente.";
   }
 }
 
