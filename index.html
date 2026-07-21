@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEX TWIN IA - Análisis Real</title>
+    <title>LEX TWIN IA - Análisis Seguro</title>
     <style>
         body {
             background-color: #060B13;
@@ -31,10 +31,12 @@
         }
         h2 { margin-top: 0; font-size: 1.1rem; }
         .etiqueta { font-size: 0.75rem; color: #8A9BB3; margin-bottom: 8px; display: block; margin-top: 15px; }
-        .selector {
+        .selector, .input-key {
             background-color: #121E36; border: 1px solid #233554; color: white;
             padding: 12px; border-radius: 8px; width: 100%; font-size: 0.9rem; outline: none; margin-bottom: 15px;
+            box-sizing: border-box;
         }
+        .input-key { color: #00FFAA; font-family: monospace; }
         .btn-subir {
             background-color: #2563EB; border: none; color: white;
             padding: 15px; border-radius: 8px; width: 100%; font-size: 1rem;
@@ -57,14 +59,18 @@
         <!-- COLUMNA IZQUIERDA -->
         <div class="tarjeta">
             <h2>Configura la revisión</h2>
+
+            <span class="etiqueta">Credencial de IA (Google API Key)</span>
+            <input type="password" id="input-apikey" class="input-key" placeholder="Pega tu clave (ej. AQ.Ab...)" autocomplete="off">
+
             <span class="etiqueta">Entidad y Trámite</span>
             <select class="selector" id="select-tramite">
                 <option value="Moche - Constancia de No Adeudo">Municipalidad de Moche: Constancia de No Adeudo</option>
                 <option value="Trujillo - Licencia de Funcionamiento">Municipalidad de Trujillo: Licencia de Funcionamiento</option>
             </select>
 
-            <span class="etiqueta">Sube el documento del ciudadano (Texto o PDF rápido)</span>
-            <input type="file" id="input-archivo" class="selector" accept=".txt,.pdf">
+            <span class="etiqueta">Sube el documento del ciudadano (Archivo de texto)</span>
+            <input type="file" id="input-archivo" class="selector" accept=".txt">
 
             <button id="btn-analizar" class="btn-subir">Ejecutar Análisis con LEX TWIN IA</button>
         </div>
@@ -72,31 +78,34 @@
         <!-- COLUMNA DERECHA -->
         <div class="tarjeta">
             <h2>Diagnóstico de IA Real</h2>
-            <div id="resultado-ia" class="caja-diagnostico">Esperando documento para procesar con Gemini...</div>
+            <div id="resultado-ia" class="caja-diagnostico">Ingresa tu clave, adjunta un archivo de texto con el expediente y haz clic en analizar...</div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; // Reemplaza esto con tu API Key
-
         document.getElementById('btn-analizar').addEventListener('click', async () => {
+            const apiKey = document.getElementById('input-apikey').value.trim();
             const archivoInput = document.getElementById('input-archivo');
             const resultadoDiv = document.getElementById('resultado-ia');
             const tramiteSeleccionado = document.getElementById('select-tramite').value;
 
+            if (!apiKey) {
+                alert("Por favor ingresa tu API Key en el campo superior.");
+                return;
+            }
+
             if (archivoInput.files.length === 0) {
-                alert("Por favor selecciona un archivo primero.");
+                alert("Por favor selecciona un archivo de texto (.txt) con el expediente.");
                 return;
             }
 
             const archivo = archivoInput.files[0];
-            resultadoDiv.innerText = "Analizando el expediente con IA real, por favor espera...";
+            resultadoDiv.innerText = "Conectando con Google Gemini y analizando expediente...";
 
             const lector = new FileReader();
             lector.onload = async function(e) {
                 const contenidoTexto = e.target.result;
 
-                // Estructura del prompt para la IA evaluando el TUPA
                 const promptFinal = `Actúa como un especialista en TUPA y derecho administrativo peruano. Analiza el siguiente documento para el trámite de ${tramiteSeleccionado}. 
                 Dame un diagnóstico indicando:
                 1. Probabilidad de éxito estimada (en porcentaje).
@@ -115,6 +124,12 @@
                     });
 
                     const datos = await respuesta.json();
+                    
+                    if (datos.error) {
+                        resultadoDiv.innerText = "Error de la API: " + datos.error.message;
+                        return;
+                    }
+
                     const textoRespuesta = datos.candidates[0].content.parts[0].text;
                     resultadoDiv.innerText = textoRespuesta;
 
