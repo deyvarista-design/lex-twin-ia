@@ -212,57 +212,71 @@ async function analizarExpediente() {
     return;
   }
 
-  // Estado de carga visual
+  // Estado visual de carga
   scoreElemento.innerText = "⏳...";
-  alertasTexto.innerText = "Analizando requisitos del TUPA con Gemelo Digital...";
+  alertasTexto.innerText = "Analizando requisitos con Gemelo Digital...";
   recomendacionesTexto.innerText = "Procesando observaciones...";
 
-  const prompt = `
-    Actúa como un Gemelo Digital y Asesor Legal Administrativo de la entidad pública "${entidadActual.toUpperCase()}".
-    Trámite seleccionado: "${tramiteSeleccionado.nombre}".
-    Requisitos del TUPA: "${tramiteSeleccionado.requisitos}".
+  // Construcción limpia del prompt evitando conflictos de formato
+  const nombreEntidad = String(entidadActual || "Entidad Pública").toUpperCase();
+  const nombreTramite = String(tramiteSeleccionado.nombre || "Trámite General");
+  const requisitosTramite = String(tramiteSeleccionado.requisitos || "Requisitos estándar del TUPA");
 
-    Expediente/Solicitud presentada por el ciudadano:
-    """
-    ${textoExpediente}
-    """
+  const promptText = `
+Actúa como Gemelo Digital y Asesor Legal Administrativo de la entidad pública "${nombreEntidad}".
+Trámite: "${nombreTramite}"
+Requisitos TUPA: "${requisitosTramite}"
 
-    Instrucciones:
-    Analiza el expediente del ciudadano frente a los requisitos del TUPA y responde ÚNICAMENTE en el siguiente formato JSON estricto (sin explicaciones adicionales ni bloques markdown de código):
-    {
-      "probabilidad": 85,
-      "observaciones": "Resumen claro de lo que falta o está mal según el TUPA.",
-      "recomendaciones": "Pasos o correcciones exactas para que el trámite sea aprobado."
-    }
-  `;
+Expediente presentado:
+"""
+${textoExpediente}
+"""
+
+Instrucciones:
+Analiza el expediente frente a los requisitos del TUPA. Responde ÚNICAMENTE en este formato JSON estricto:
+{"probabilidad": 85, "observaciones": "Resumen claro de lo que falta o está mal.", "recomendaciones": "Pasos exactos para corregirlo."}
+`.trim();
 
   try {
-    // Cambia 'gemini-1.5-flash' por 'gemini-2.0-flash' o 'gemini-1.5-flash'
-	const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }]
-  })
-});
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const respuesta = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: promptText }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!respuesta.ok) {
+      const errorDetail = await respuesta.json();
+      console.error("Detalle del error de la API:", errorDetail);
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
 
     const data = await respuesta.json();
     let textoRespuesta = data.candidates[0].content.parts[0].text;
     
-    // Limpieza si la IA responde dentro de un bloque markdown
+    // Limpieza de bloques markdown ```json ... ```
     textoRespuesta = textoRespuesta.replace(/```json|```/g, '').trim();
     const resultado = JSON.parse(textoRespuesta);
 
-    // Mostrar resultados en la interfaz
+    // Actualización de UI
     scoreElemento.innerText = `${resultado.probabilidad}%`;
     alertasTexto.innerText = resultado.observaciones;
     recomendacionesTexto.innerText = resultado.recomendaciones;
 
   } catch (error) {
-    console.error("Error al consultar Gemini:", error);
+    console.error("Error en el Gemelo Digital:", error);
     scoreElemento.innerText = "Error";
-    alertasTexto.innerText = "Hubo un problema al consultar el modelo de IA. Revisa tu API Key o conexión.";
-    recomendacionesTexto.innerText = "Intenta nuevamente en unos segundos.";
+    alertasTexto.innerText = "Ocurrió un error al procesar el expediente. Revisa la consola para más detalles.";
+    recomendacionesTexto.innerText = "Verifica que seleccionaste un trámite válido de la lista.";
   }
 }
 
