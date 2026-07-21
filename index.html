@@ -194,7 +194,7 @@
         });
     }
 // Reemplaza esto con tu API Key obtenida de Google AI Studio
-const GEMINI_API_KEY = "AQ.Ab8RN6JHF-Q2Wi6SLCfPTR6IpF8OapDm9_rfRmhZZERWy-Waug"; 
+const GEMINI_API_KEY = "AQ.Ab8RN6JjNe8Lwbut6SS7f1xbu9tFkFTVNj9aOrLTAyu1tcK5Fg"; 
 
 async function analizarExpediente() {
   const textoExpediente = document.getElementById('texto-expediente').value.trim();
@@ -237,7 +237,8 @@ async function analizarExpediente() {
   `;
 
   try {
-    const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Cambia 'gemini-2.5-flash' por 'gemini-2.0-flash' o 'gemini-1.5-flash'
+	  const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
