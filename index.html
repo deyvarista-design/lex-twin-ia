@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEX TWIN IA - Plataforma</title>
+    <title>LEX TWIN IA - Análisis Real</title>
     <style>
-        /* Estilos generales del fondo oscuro */
         body {
             background-color: #060B13;
             color: white;
@@ -16,15 +15,12 @@
             padding: 40px;
             margin: 0;
         }
-
         .contenedor-principal {
             display: flex;
             gap: 20px;
             width: 100%;
             max-width: 1000px;
         }
-
-        /* Estilo de las tarjetas (Columnas) */
         .tarjeta {
             background-color: #0A1324;
             border: 1px solid #1C2A43;
@@ -33,301 +29,102 @@
             width: 50%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
-        h2 {
-            margin-top: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        /* Columna Izquierda: Botones y Selectores */
-        .etiqueta {
-            font-size: 0.75rem;
-            color: #8A9BB3;
-            margin-bottom: 8px;
-            display: block;
-            margin-top: 15px;
-        }
-
+        h2 { margin-top: 0; font-size: 1.1rem; }
+        .etiqueta { font-size: 0.75rem; color: #8A9BB3; margin-bottom: 8px; display: block; margin-top: 15px; }
         .selector {
-            background-color: #121E36;
-            border: 1px solid #233554;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 0.9rem;
-            outline: none;
-            margin-bottom: 15px;
+            background-color: #121E36; border: 1px solid #233554; color: white;
+            padding: 12px; border-radius: 8px; width: 100%; font-size: 0.9rem; outline: none; margin-bottom: 15px;
         }
-
-        .grilla-botones {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .btn-inactivo {
-            background-color: #121E36;
-            border: 1px solid #233554;
-            color: #8A9BB3;
-            padding: 10px;
-            border-radius: 8px;
-            flex: 1;
-            text-align: left;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .btn-activo {
-            background-color: #112847;
-            border: 1px solid #1D4576;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            flex: 1;
-            text-align: left;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .punto-verde {
-            color: #00FFAA;
-            font-weight: bold;
-        }
-
-        /* Botón de Subir Archivo */
         .btn-subir {
-            background-color: #2563EB;
-            border: none;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s;
+            background-color: #2563EB; border: none; color: white;
+            padding: 15px; border-radius: 8px; width: 100%; font-size: 1rem;
+            font-weight: bold; cursor: pointer; margin-top: 20px;
         }
-
-        .btn-subir:hover {
-            background-color: #1D4ED8;
+        .btn-subir:hover { background-color: #1D4ED8; }
+        .caja-diagnostico {
+            background-color: #121E36; border: 1px solid #233554; padding: 15px;
+            border-radius: 8px; margin-top: 20px; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap;
         }
-
-        /* Columna Derecha: Diagnóstico */
-        .cabecera-diagnostico {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .etiqueta-simulado {
-            background-color: #072B2B;
-            color: #00FFAA;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-
-        .seccion-porcentaje {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            border-bottom: 1px solid #1C2A43;
-            padding-bottom: 20px;
-        }
-
-        .porcentaje {
-            color: #00FFAA;
-            font-size: 2.8rem;
-            font-weight: bold;
-            margin: 0;
-            transition: color 0.3s;
-        }
-
-        /* Contenedor de resultados oculto al inicio */
-        #caja-resultados {
-            display: none;
-        }
-
-        .caja-alerta {
-            background-color: #1A1713;
-            border: 1px solid #362914;
-            border-left: 4px solid #F59E0B;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .titulo-alerta {
-            color: #FBBF24;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .caja-recomendacion {
-            background-color: #072B2B;
-            border: 1px solid #114242;
-            border-left: 4px solid #10B981;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .titulo-recomendacion {
-            color: #34D399;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .texto-descripcion {
-            font-size: 0.8rem;
-            color: #A0ABC0;
-            margin: 0;
-            line-height: 1.5;
-        }
-		/* --- Adaptación para celulares (Responsive) --- */
         @media (max-width: 768px) {
-            .contenedor-principal {
-                flex-direction: column; /* Coloca una tarjeta debajo de la otra */
-                padding: 10px;
-            }
-            
-            .tarjeta {
-                width: 100%; /* Hace que las tarjetas ocupen todo el ancho del celular */
-                box-sizing: border-box;
-            }
-            
-            body {
-                padding: 15px; /* Reduce los bordes en celulares */
-            }
+            .contenedor-principal { flex-direction: column; }
+            .tarjeta { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
 <body>
 
     <div class="contenedor-principal">
-        
-        <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN -->
+        <!-- COLUMNA IZQUIERDA -->
         <div class="tarjeta">
             <h2>Configura la revisión</h2>
-            
-            <span class="etiqueta">Entidad</span>
-            <select class="selector">
-                <option>Municipalidad Distrital de Moche</option>
+            <span class="etiqueta">Entidad y Trámite</span>
+            <select class="selector" id="select-tramite">
+                <option value="Moche - Constancia de No Adeudo">Municipalidad de Moche: Constancia de No Adeudo</option>
+                <option value="Trujillo - Licencia de Funcionamiento">Municipalidad de Trujillo: Licencia de Funcionamiento</option>
             </select>
 
-            <div class="grilla-botones">
-                <button class="btn-activo"><span class="punto-verde">•</span> Moche</button>
-                <button class="btn-inactivo">Trujillo</button>
-            </div>
-            <div class="grilla-botones">
-                <button class="btn-inactivo">RENIEC</button>
-                <button class="btn-inactivo">SUNARP</button>
-            </div>
+            <span class="etiqueta">Sube el documento del ciudadano (Texto o PDF rápido)</span>
+            <input type="file" id="input-archivo" class="selector" accept=".txt,.pdf">
 
-            <span class="etiqueta" style="color: #00FFAA; font-weight: bold;">MOCHE</span>
-            <button class="btn-activo" style="width: 100%; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                Constancia de No Adeudo Tributario <span class="punto-verde">•</span>
-            </button>
-            <button class="btn-inactivo" style="width: 100%;">
-                Inscripción / Registro Predial (HR/PU)
-            </button>
-
-            <!-- Input oculto para cargar archivo y Botón visible -->
-            <input type="file" id="archivo-pdf" accept=".pdf" style="display: none;">
-            <button id="btn-subir" class="btn-subir">Subir Expediente (PDF) y Analizar</button>
-
+            <button id="btn-analizar" class="btn-subir">Ejecutar Análisis con LEX TWIN IA</button>
         </div>
 
-        <!-- COLUMNA DERECHA: DIAGNÓSTICO IA -->
+        <!-- COLUMNA DERECHA -->
         <div class="tarjeta">
-            <div class="cabecera-diagnostico">
-                <h2>Diagnóstico de IA</h2>
-                <span class="etiqueta-simulado" id="estado-etiqueta">Esperando Documento</span>
-            </div>
-
-            <div class="seccion-porcentaje">
-                <span id="texto-estado" style="color: #8A9BB3; font-size: 0.9rem;">Probabilidad de éxito</span>
-                <span class="porcentaje" id="numero-porcentaje">--%</span>
-            </div>
-
-            <!-- Estas cajas aparecerán después del análisis -->
-            <div id="caja-resultados">
-                <div class="caja-alerta">
-                    <div class="titulo-alerta">3 Alertas TUPA detectadas</div>
-                    <p class="texto-descripcion">Falta copia de DNI, FUT sin firma y comprobante con código de tasa incorrecto.</p>
-                </div>
-
-                <div class="caja-recomendacion">
-                    <div class="titulo-recomendacion">Recomendaciones de corrección</div>
-                    <p class="texto-descripcion">Corrige la copia de DNI, firma el FUT, verifica el código de tasa y vuelve a analizar el expediente antes de presentarlo ante la entidad pública.</p>
-                </div>
-            </div>
+            <h2>Diagnóstico de IA Real</h2>
+            <div id="resultado-ia" class="caja-diagnostico">Esperando documento para procesar con Gemini...</div>
         </div>
-
     </div>
 
-    <!-- SCRIPT DE ANIMACIÓN (JAVASCRIPT) -->
     <script>
-        const btnSubir = document.getElementById('btn-subir');
-        const inputPdf = document.getElementById('archivo-pdf');
-        const numeroPorcentaje = document.getElementById('numero-porcentaje');
-        const textoEstado = document.getElementById('texto-estado');
-        const estadoEtiqueta = document.getElementById('estado-etiqueta');
-        const cajaResultados = document.getElementById('caja-resultados');
+        const apiKey = ""; // Reemplaza esto con tu API Key
 
-        // Al hacer clic en el botón azul, se abre la ventana para elegir el PDF
-        btnSubir.addEventListener('click', () => {
-            inputPdf.click();
-        });
+        document.getElementById('btn-analizar').addEventListener('click', async () => {
+            const archivoInput = document.getElementById('input-archivo');
+            const resultadoDiv = document.getElementById('resultado-ia');
+            const tramiteSeleccionado = document.getElementById('select-tramite').value;
 
-        // Cuando el usuario elige el archivo, empieza la magia
-        inputPdf.addEventListener('change', () => {
-            if(inputPdf.files.length > 0) {
-                iniciarAnalisis();
+            if (archivoInput.files.length === 0) {
+                alert("Por favor selecciona un archivo primero.");
+                return;
             }
+
+            const archivo = archivoInput.files[0];
+            resultadoDiv.innerText = "Analizando el expediente con IA real, por favor espera...";
+
+            const lector = new FileReader();
+            lector.onload = async function(e) {
+                const contenidoTexto = e.target.result;
+
+                // Estructura del prompt para la IA evaluando el TUPA
+                const promptFinal = `Actúa como un especialista en TUPA y derecho administrativo peruano. Analiza el siguiente documento para el trámite de ${tramiteSeleccionado}. 
+                Dame un diagnóstico indicando:
+                1. Probabilidad de éxito estimada (en porcentaje).
+                2. Alertas TUPA detectadas (requisitos faltantes o erróneos).
+                3. Recomendaciones precisas de corrección.
+                
+                Contenido del expediente: ${contenidoTexto}`;
+
+                try {
+                    const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptFinal }] }]
+                        })
+                    });
+
+                    const datos = await respuesta.json();
+                    const textoRespuesta = datos.candidates[0].content.parts[0].text;
+                    resultadoDiv.innerText = textoRespuesta;
+
+                } catch (error) {
+                    resultadoDiv.innerText = "Ocurrió un error al conectar con la IA: " + error.message;
+                }
+            };
+
+            lector.readAsText(archivo);
         });
-
-        function iniciarAnalisis() {
-            btnSubir.disabled = true;
-            btnSubir.innerText = "Analizando con LEX TWIN IA...";
-            btnSubir.style.backgroundColor = "#475569";
-            
-            estadoEtiqueta.innerText = "Procesando";
-            estadoEtiqueta.style.color = "#FBBF24";
-            textoEstado.innerText = "Leyendo documento...";
-            numeroPorcentaje.style.color = "#FBBF24";
-            cajaResultados.style.display = 'none';
-            
-            // Simulación de los porcentajes de tu guion
-            let pasos = [20, 45, 80, 100];
-            let tiempo = 0;
-
-            pasos.forEach((paso) => {
-                setTimeout(() => {
-                    numeroPorcentaje.innerText = paso + '%';
-                    
-                    if (paso === 100) {
-                        setTimeout(() => {
-                            // Resultado final
-                            btnSubir.innerText = "Análisis Completado";
-                            estadoEtiqueta.innerText = "Simulado";
-                            estadoEtiqueta.style.color = "#00FFAA";
-                            textoEstado.innerText = "Probabilidad de éxito";
-                            numeroPorcentaje.innerText = "45%"; // Vuelve a tu diseño original
-                            numeroPorcentaje.style.color = "#00FFAA";
-                            cajaResultados.style.display = 'block'; // Muestra las alertas
-                        }, 1000);
-                    }
-                }, tiempo += 1200); // Avanza cada 1.2 segundos
-            });
-        }
     </script>
 </body>
 </html>
